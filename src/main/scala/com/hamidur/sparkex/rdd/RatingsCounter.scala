@@ -1,19 +1,11 @@
-package com.hamidur.sparkex
+package com.hamidur.sparkex.rdd
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 
-/*
-  Counts the number of ratings for all movies.
-  Data is tab delimited.
-  Header: UserId, MovieId, Rating, Timestamp
-
-  Ex. 1 -> X, 2 -> Y, 3 -> Z, 4 -> A, 5 -> B
- */
-
 object RatingsCounter {
 
-  def main(args: Array[String]) : Unit = {
+  def main(args: Array[String]): Unit = {
 
     // setting log to only print the errors, skip others
     Logger.getLogger("movieRatingCounter").setLevel(Level.ERROR)
