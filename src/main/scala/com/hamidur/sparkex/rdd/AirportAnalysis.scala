@@ -57,6 +57,14 @@ object AirportAnalysis {
       .collect()
       .foreach({case (state, names) => println(state + " -> " + names.size + " => " + names.toString())})
 
+    // 5. Count and print how many unique cities have airports in each state
+    airports
+      .map(tuple => (tuple._2._3, tuple._2._2))
+      .groupByKey()
+      .sortByKey()
+      .collect()
+      .foreach({case (state, cities) => println(state + " -> " + cities.size + " => " + cities.toString())})
+
     // stop the session
     spark.stop()
   }
