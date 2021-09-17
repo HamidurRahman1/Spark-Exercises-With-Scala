@@ -3,7 +3,7 @@ package com.hamidur.sparkex.rdd
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
-object AirlinesCount {
+object AirlinesAnalysis {
 
   def main(args: Array[String]) : Unit = {
 
