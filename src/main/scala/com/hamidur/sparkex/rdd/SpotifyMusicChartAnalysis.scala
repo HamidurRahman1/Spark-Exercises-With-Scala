@@ -2,7 +2,7 @@ package com.hamidur.sparkex.rdd
 
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object SpotifyMusicChartAnalysis {
 
@@ -22,14 +22,36 @@ object SpotifyMusicChartAnalysis {
               .option("escape", "\"")
               .load("data/spotify_dataset.csv")
 
-
     val cleanedRdd = dfToRdd(df)
 
-    cleanedRdd.take(10).foreach(println)
+    // save to memory for faster recomputing from `cleanedRdd`
+    cleanedRdd.cache()
+
+    // 1. Count the number of rows in the RDD
+    println(cleanedRdd.count())
+
+    // 2. Top 5 songs that had the most streams, print the # of streams, artist, song name
+    topFiveSongsByStreams(cleanedRdd)
+
+    // 3. Count the total number of unique artists
+    println(cleanedRdd.map(row => row._5).distinct().count())
+
+    // 4. Which artist has the most followers for a single song, print artist name, song name, followers
+    cleanedRdd.map(row => (row._3, row._5, row._6))
+      .sortBy(_._2, ascending = false)
+      .take(1)(0)
+
+    // 5. Find 5 unique artist whose song were ranked 1 in the chart
+    cleanedRdd.map(row => (row._1, row._5))
+      .groupByKey()
+      .filter(row => row._1 == 1)
+      .map(row => row._2.toSet.take(5))
+      .foreach(println)
 
     spark.close()
   }
 
+  // converts a dataframe to a tuple of RDD with specific type and only the columns needed
   def dfToRdd(df: DataFrame) : RDD[(Int, Int, String, Int, String, Int, Int, Int, String)] = {
     df.rdd
       .map(row => (zeroWhenEmptyElseNum(row(1).toString),       // Highest Charting Position
@@ -42,5 +64,13 @@ object SpotifyMusicChartAnalysis {
         zeroWhenEmptyElseNum(row(11).toString),                 // Duration (ms)
         row(12).toString                                        // Chord
       ))
+  }
+
+  // Q2: Top 5 songs that had the most streams, print the # of streams, artist, song name
+  def topFiveSongsByStreams(rdd: RDD[(Int, Int, String, Int, String, Int, Int, Int, String)]) : Unit = {
+    rdd.map(row => (row._3, row._4, row._5))    // take only song name, streams, artist in this order
+      .sortBy(_._2, ascending = false)          // sort by stream, descending
+      .take(5)
+      .foreach(row => println("Streams: " + row._2 + ", Song: " + row._1 + ", Artist: " + row._3))
   }
 }
