@@ -37,16 +37,28 @@ object SpotifyMusicChartAnalysis {
     println(cleanedRdd.map(row => row._5).distinct().count())
 
     // 4. Which artist has the most followers for a single song, print artist name, song name, followers
-    cleanedRdd.map(row => (row._3, row._5, row._6))
-      .sortBy(_._2, ascending = false)
-      .take(1)(0)
+    val song_artist_followers = cleanedRdd.map(row => (row._3, row._5, row._6))
+                                    .sortBy(_._2, ascending = false)
+                                    .take(1)(0)
+    println(song_artist_followers)
 
     // 5. Find 5 unique artist whose song were ranked 1 in the chart
     cleanedRdd.map(row => (row._1, row._5))
-      .groupByKey()
       .filter(row => row._1 == 1)
+      .groupByKey()
       .map(row => row._2.toSet.take(5))
       .foreach(println)
+
+    // 6. Find the total unique chords
+    println(cleanedRdd.map(row => row._9.strip().toUpperCase()).distinct().count())
+
+    // 7. Find the average popularity of the songs
+    println(cleanedRdd.map(row => row._7).reduce((x, y) => x + y) / cleanedRdd.count())
+
+    // 8. Find the song name which was charted the most print song name, artist
+    println(cleanedRdd.map(row => (row._2, row._3, row._5))
+          .sortBy(_._1, ascending = false)
+          .take(1)(0).toString())
 
     spark.close()
   }
